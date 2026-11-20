@@ -1,0 +1,15 @@
+{
+  "name": "glamour-runway-3d",
+  "version": "1.0.0",
+  "description": "3D Web-Based Fashion Game prototype inspired by Dress to Impress using Three.js",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "keywords": ["threejs", "game", "fashion", "webgl", "dress-to-impress"],
+  "author": "Autonomous Development Team",
+  "license": "MIT"
+}

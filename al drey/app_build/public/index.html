@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Glamour Runway 3D ✨ Fashion Showcase</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
+  <!-- Three.js and OrbitControls via unpkg CDN -->
+  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+  <!-- 3D Canvas Viewport -->
+  <div id="canvas-container"></div>
+
+  <!-- Paparazzi Camera Flash Overlay -->
+  <div id="flash-overlay" class="flash-overlay"></div>
+
+  <!-- Cinematic Letterbox (Runway Mode) -->
+  <div id="cinematic-bars" class="cinematic-bars hidden">
+    <div class="bar top-bar"></div>
+    <div class="bar bottom-bar"></div>
+  </div>
+
+  <!-- Top HUD Bar: Theme, Timer & Finish Button -->
+  <header id="top-hud" class="top-hud">
+    <div class="hud-card theme-badge">
+      <span class="theme-icon" id="theme-icon">✨</span>
+      <div class="theme-info">
+        <span class="hud-label">TEMA FASHION</span>
+        <h2 class="theme-title" id="theme-title">Cyberpunk Gala</h2>
+      </div>
+      <div class="theme-hint-pill" id="theme-hint" title="Petunjuk gaya">Futuristic, Neon, Metallic</div>
+    </div>
+
+    <div class="hud-center">
+      <div class="timer-card" id="timer-card">
+        <div class="timer-circle-svg">
+          <svg viewBox="0 0 44 44">
+            <circle class="timer-bg" cx="22" cy="22" r="18" />
+            <circle class="timer-bar" id="timer-bar" cx="22" cy="22" r="18" />
+          </svg>
+          <span class="timer-text" id="timer-text">90</span>
+        </div>
+        <div class="timer-label">DETIK TERSISA</div>
+      </div>
+    </div>
+
+    <div class="hud-right-actions">
+      <button id="btn-audio" class="hud-btn-icon" title="Toggle Suara">
+        <span id="audio-icon">🔊</span>
+      </button>
+      <button id="btn-finish" class="btn-primary-glow">
+        <span class="btn-sparkle">✨</span>
+        <span class="btn-label">Selesai & Tampil!</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Turntable Drag Hint & Quick Camera Bar -->
+  <div id="turntable-controls" class="turntable-controls">
+    <div class="drag-hint">
+      <span class="hint-icon">🔄</span>
+      <span>Geser mouse untuk memutar model 360°</span>
+    </div>
+    <div class="camera-actions">
+      <button id="btn-rotate-left" class="cam-btn" title="Putar Kiri">↺</button>
+      <button id="btn-reset-cam" class="cam-btn" title="Reset Kamera">🎯</button>
+      <button id="btn-rotate-right" class="cam-btn" title="Putar Kanan">↻</button>
+    </div>
+  </div>
+
+  <!-- Side Customization Drawer -->
+  <aside id="customizer-panel" class="customizer-panel">
+    <div class="panel-header">
+      <div class="header-titles">
+        <h3 class="panel-title">Wardrobe Studio</h3>
+        <p class="panel-subtitle">Kustomisasi Gaya & Aksesoris</p>
+      </div>
+      <button id="btn-toggle-panel" class="btn-collapse" title="Sembunyikan Panel">✕</button>
+    </div>
+
+    <!-- Category Tabs -->
+    <nav class="category-tabs" id="category-tabs">
+      <button class="cat-tab active" data-category="hair" title="Gaya Rambut">
+        <span class="cat-icon">💇</span>
+        <span class="cat-name">Rambut</span>
+      </button>
+      <button class="cat-tab" data-category="top" title="Atasan & Gaun">
+        <span class="cat-icon">👗</span>
+        <span class="cat-name">Atasan</span>
+      </button>
+      <button class="cat-tab" data-category="bottom" title="Bawahan & Rok">
+        <span class="cat-icon">👖</span>
+        <span class="cat-name">Bawahan</span>
+      </button>
+      <button class="cat-tab" data-category="shoes" title="Sepatu">
+        <span class="cat-icon">👠</span>
+        <span class="cat-name">Sepatu</span>
+      </button>
+      <button class="cat-tab" data-category="accessory" title="Aksesoris Kepala">
+        <span class="cat-icon">👑</span>
+        <span class="cat-name">Aksesoris</span>
+      </button>
+    </nav>
+
+    <!-- Item Catalog Grid -->
+    <div class="items-scroll-area">
+      <div class="items-grid" id="items-grid">
+        <!-- Dynamically populated by JS -->
+      </div>
+    </div>
+
+    <!-- Color Customization Section -->
+    <div class="color-picker-section">
+      <div class="color-header">
+        <span class="color-title">Palet Warna Material</span>
+        <span class="selected-item-tag" id="selected-item-tag">Pakaian</span>
+      </div>
+      <!-- Preset Swatches -->
+      <div class="color-swatches" id="color-swatches">
+        <button class="swatch active" data-color="#ff4081" style="background:#ff4081;" title="Hot Pink"></button>
+        <button class="swatch" data-color="#9c27b0" style="background:#9c27b0;" title="Cyber Purple"></button>
+        <button class="swatch" data-color="#00e5ff" style="background:#00e5ff;" title="Electric Cyan"></button>
+        <button class="swatch" data-color="#ffd700" style="background:#ffd700;" title="Royal Gold"></button>
+        <button class="swatch" data-color="#ffffff" style="background:#ffffff;" title="Pure White"></button>
+        <button class="swatch" data-color="#1a1a24" style="background:#1a1a24;" title="Midnight Black"></button>
+        <button class="swatch" data-color="#00e676" style="background:#00e676;" title="Emerald"></button>
+        <button class="swatch" data-color="#ff3d00" style="background:#ff3d00;" title="Crimson"></button>
+        <button class="swatch" data-color="#ffab91" style="background:#ffab91;" title="Pastel Peach"></button>
+        <button class="swatch" data-color="#b388ff" style="background:#b388ff;" title="Lilac Pastel"></button>
+      </div>
+      <!-- Custom Color Input -->
+      <div class="custom-color-row">
+        <label for="custom-color-input" class="custom-color-label">
+          <span class="color-preview-circle" id="color-preview-circle" style="background-color: #ff4081;"></span>
+          <span>Warna Kustom:</span>
+        </label>
+        <input type="color" id="custom-color-input" value="#ff4081">
+      </div>
+    </div>
+  </aside>
+
+  <!-- Button to Re-open panel if collapsed -->
+  <button id="btn-reopen-panel" class="btn-reopen hidden" title="Buka Wardrobe">
+    <span>👗 Buka Wardrobe</span>
+  </button>
+
+  <!-- Runway HUD (During Catwalk Phase) -->
+  <div id="runway-hud" class="runway-hud hidden">
+    <div class="runway-badge">
+      <span class="live-pulse"></span>
+      <span>LIVE CATWALK RUNWAY</span>
+    </div>
+    <div class="pose-banner" id="pose-banner">
+      <span class="pose-title" id="pose-title">Walk Down The Runway...</span>
+    </div>
+    <div class="camera-flash-counter" id="camera-flash-counter">
+      📸 Paparazzi Shutter Active
+    </div>
+  </div>
+
+  <!-- Scoring & Podium Modal Overlay -->
+  <div id="results-modal" class="results-modal hidden">
+    <div class="results-backdrop"></div>
+    <div class="results-card">
+      <div class="results-header">
+        <span class="trophy-sparkle">🏆</span>
+        <h2 class="results-main-title">HASIL RUNWAY FASHION SHOW</h2>
+        <p class="results-theme-recap">Tema: <strong id="modal-theme-name">Cyberpunk Gala</strong></p>
+      </div>
+
+      <!-- Player Score Breakdown -->
+      <div class="player-score-box">
+        <div class="score-stars" id="score-stars">
+          ★★★★★
+        </div>
+        <div class="score-number-row">
+          <span class="score-value" id="player-score-value">94</span>
+          <span class="score-max">/ 100 Poin</span>
+        </div>
+        <div class="score-rank-announcement" id="player-rank-announcement">
+          🎉 Luar Biasa! Kamu Meraih Juara 1!
+        </div>
+        <div class="score-criteria">
+          <div class="crit-item">
+            <span>Kesesuaian Tema</span>
+            <strong id="crit-theme">Sempurna (+40)</strong>
+          </div>
+          <div class="crit-item">
+            <span>Harmoni Warna</span>
+            <strong id="crit-color">Serasi (+30)</strong>
+          </div>
+          <div class="crit-item">
+            <span>Kelengkapan Set</span>
+            <strong id="crit-set">Lengkap (+24)</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Podium Top 3 Standings -->
+      <div class="podium-section">
+        <h4 class="podium-title">Papan Peringkat Podium</h4>
+        <div class="podium-list" id="podium-list">
+          <!-- Populated by JS: Rank 1, 2, 3 and AI competitors -->
+        </div>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="modal-actions">
+        <button id="btn-play-again" class="btn-primary-glow btn-large">
+          <span>🔄 Main Lagi dengan Tema Baru</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modular Scripts -->
+  <script src="js/audio.js"></script>
+  <script src="js/items.js"></script>
+  <script src="js/character.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/runway.js"></script>
+  <script src="js/gameManager.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
